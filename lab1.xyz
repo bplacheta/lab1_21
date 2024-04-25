@@ -1,0 +1,47 @@
+import numpy as np
+
+def generate_points_on_horizontal_plane(width, length, num_points):
+    """Generuje chmurę punktów na płaskiej poziomej powierzchni."""
+    points = np.random.rand(num_points, 3)
+    points[:, 0] = points[:, 0] * width - width / 2  # Losowe współrzędne x
+    points[:, 1] = points[:, 1] * length - length / 2  # Losowe współrzędne y
+    points[:, 2] = 0  # Wysokość punktów ustawiona na 0
+    return points
+
+def generate_points_on_vertical_plane(width, height, num_points):
+    """Generuje chmurę punktów na płaskiej pionowej powierzchni."""
+    points = np.random.rand(num_points, 3)
+    points[:, 0] = points[:, 0] * width - width / 2  # Losowe współrzędne x
+    points[:, 1] = 0  # Wysokość punktów ustawiona na 0
+    points[:, 2] = points[:, 2] * height - height / 2  # Losowe współrzędne z
+    return points
+
+def generate_points_on_cylindrical_surface(radius, height, num_points):
+    """Generuje chmurę punktów na powierzchni cylindrycznej."""
+    theta = np.random.rand(num_points) * 2 * np.pi  # Kąt theta
+    z = np.random.rand(num_points) * height - height / 2  # Wysokość punktów
+    points = np.zeros((num_points, 3))
+    points[:, 0] = radius * np.cos(theta)  # Współrzędna x
+    points[:, 1] = radius * np.sin(theta)  # Współrzędna y
+    points[:, 2] = z  # Współrzędna z
+    return points
+
+# Przykładowe użycie funkcji
+width = 10
+length = 15
+height = 8
+radius = 5
+num_points = 100
+
+horizontal_plane_points = generate_points_on_horizontal_plane(width, length, num_points)
+vertical_plane_points = generate_points_on_vertical_plane(width, height, num_points)
+cylindrical_surface_points = generate_points_on_cylindrical_surface(radius, height, num_points)
+
+print("Chmura punktów na płaskiej poziomej powierzchni:")
+print(horizontal_plane_points)
+
+print("\nChmura punktów na płaskiej pionowej powierzchni:")
+print(vertical_plane_points)
+
+print("\nChmura punktów na powierzchni cylindrycznej:")
+print(cylindrical_surface_points)
