@@ -4,6 +4,7 @@ from sklearn.cluster import KMeans
 from pyransac3d import Plane
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
+from scipy.spatial.transform import Rotation as R
 
 
 def load_xyz_file(filename):
@@ -57,32 +58,51 @@ def fit_plane_to_points_dbscan(points, eps=0.5, min_samples=5):
 
     return clusters
 
-filename = "punkty.xyz"
-cloud_points = load_xyz_file(filename)
-print("Wczytane punkty:")
-print(cloud_points)
 
-# Zadanie 3
-num_clusters = 3
-clusters_kmeans = find_disjoint_clusters_kmeans(cloud_points, num_clusters)
-print("\nZadanie 3: Rozłączne chmury punktów za pomocą k-średnich:")
-for i, cluster in enumerate(clusters_kmeans):
-    print(f"Chmura punktów {i + 1}: {len(cluster)} punktów")
+def classify_orientation(points):
+    mean_x = np.mean(points[:, 0])
+    mean_y = np.mean(points[:, 1])
+    mean_z = np.mean(points[:, 2])
+    var_x = np.var(points[:, 0])
+    var_y = np.var(points[:, 1])
+    var_z = np.var(points[:, 2])
+    if var_z < var_x and var_z < var_y:
+        return "Pozioma"
+    else:
+        return "Pionowa"
 
-# Zadanie 4:
-print("\nZadanie 4: Dopasowanie płaszczyzny:")
-for i, cluster in enumerate(clusters_kmeans):
-    equation, _ = fit_plane_to_points_pyransac(cluster)
-    print(f"Dla klastra {i + 1}: Wektor normalny do płaszczyzny:", equation[:3])
-    print("Płaszczyzna jest pionowa" if abs(equation[2]) > 0.95 else "Płaszczyzna jest pozioma")
 
-# Zadanie 6:
-print("\nZadanie 6: Powtórzenie zadania 3 i 4 z użyciem DBSCAN oraz pyransac3d:")
-clusters_dbscan = fit_plane_to_points_dbscan(cloud_points)
-if len(clusters_dbscan) == 0:
-    print("Nie znaleziono klastrów za pomocą algorytmu DBSCAN.")
-else:
-    for i, cluster in enumerate(clusters_dbscan):
+filename = ["punkty_płaska_pozioma.xyz", "punkty_płaska_pionowa.xyz", "punkty_cylindryczna.xyz"]
+
+for file in filename:
+    print("\nAnaliza pliku:", file)
+    cloud_points = load_xyz_file(file)
+    print("Wczytane punkty:")
+    print(cloud_points)
+
+    # Zadanie 3
+    num_clusters = 3
+    clusters_kmeans = find_disjoint_clusters_kmeans(cloud_points, num_clusters)
+    print("\nZadanie 3: Rozłączne chmury punktów za pomocą k-średnich:")
+    for i, cluster in enumerate(clusters_kmeans):
+        print(f"Chmura punktów {i + 1}: {len(cluster)} punktów")
+
+    # Zadanie 4:
+    print("\nZadanie 4: Dopasowanie płaszczyzny:")
+    for i, cluster in enumerate(clusters_kmeans):
         equation, _ = fit_plane_to_points_pyransac(cluster)
         print(f"Dla klastra {i + 1}: Wektor normalny do płaszczyzny:", equation[:3])
-        print("Płaszczyzna jest pionowa" if abs(equation[2]) > 0.95 else "Płaszczyzna jest pozioma")
+        orientation = classify_orientation(cluster)
+        print("Orientacja płaszczyzny:", orientation)
+
+    # Zadanie 6:
+    print("\nZadanie 6: Powtórzenie zadania 3 i 4 z użyciem DBSCAN oraz pyransac3d:")
+    clusters_dbscan = fit_plane_to_points_dbscan(cloud_points)
+    if len(clusters_dbscan) == 0:
+        print("Nie znaleziono klastrów za pomocą algorytmu DBSCAN.")
+    else:
+        for i, cluster in enumerate(clusters_dbscan):
+            equation, _ = fit_plane_to_points_pyransac(cluster)
+            print(f"Dla klastra {i + 1}: Wektor normalny do płaszczyzny:", equation[:3])
+            orientation = classify_orientation(cluster)
+            print("Orientacja płaszczyzny:", orientation)
